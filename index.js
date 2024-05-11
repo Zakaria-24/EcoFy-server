@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb')
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 require('dotenv').config()
 const port = process.env.PORT || 5000
 const app = express()
@@ -57,6 +57,30 @@ app.post("/query", async(req,res)=>{
   const result = await queriesCollection.insertOne(addQuery);
   res.send(result);
 })
+
+
+    // update a my Query
+    app.put('/query/:id',  async (req, res) => {
+      const id = req.params.id
+      const queryData = req.body
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true }
+      const updateDoc = {
+        $set: {
+          ...queryData,
+        },
+      }
+      const result = await queriesCollection.updateOne(filter, updateDoc, options)
+      res.send(result)
+    })
+
+    // Delete a my query
+    app.delete('/query/:id',  async (req, res) => {
+      const id = req.params.id
+      const filter = { _id: new ObjectId(id) }
+      const result = await queriesCollection.deleteOne(filter)
+      res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
