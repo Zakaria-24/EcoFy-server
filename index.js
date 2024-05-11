@@ -40,6 +40,22 @@ const recommendsCollection= client.db("EcoFy").collection("recommends");
 app.get("/queries", async (req, res) =>{
   const result= await queriesCollection.find().toArray();
   res.send(result);
+  // console.log(result)
+})
+// get all query by a specific user
+app.get("/query/:email", async (req, res) =>{
+  const email= req.params.email;
+  const query = {email: email}
+  // console.log(query)
+  const result= await queriesCollection.find(query).toArray();
+  res.send(result);
+})
+
+// add a query
+app.post("/query", async(req,res)=>{
+  const addQuery= req.body;
+  const result = await queriesCollection.insertOne(addQuery);
+  res.send(result);
 })
 
     // Send a ping to confirm a successful connection
