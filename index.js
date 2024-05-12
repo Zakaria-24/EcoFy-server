@@ -74,6 +74,13 @@ app.post("/query", async(req,res)=>{
   res.send(result);
 })
 
+// add a recommendation 
+  app.post("/recommendation", async(req,res)=>{
+  const addRecommend= req.body;
+  const result = await recommendsCollection.insertOne(addRecommend);
+  res.send(result);
+  })
+
 
     // update a my Query
     app.put('/query/:id',  async (req, res) => {
