@@ -58,6 +58,14 @@ app.get("/UpdateQuery/:id", async (req, res) =>{
   const result= await queriesCollection.findOne(filter);
   res.send(result);
 })
+// get query by a specific id for details
+app.get("/details/:id", async (req, res) =>{
+  const id= req.params.id;
+  const filter = {_id: new ObjectId(id)}
+  // console.log(query)
+  const result= await queriesCollection.findOne(filter);
+  res.send(result);
+})
 
 // add a query
 app.post("/query", async(req,res)=>{
