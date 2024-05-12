@@ -38,16 +38,16 @@ const recommendsCollection= client.db("EcoFy").collection("recommends");
 
 // get all queries
 app.get("/queries", async (req, res) =>{
-  const result= await queriesCollection.find().toArray();
+  const result= await queriesCollection.find().sort({dateTime: -1}).toArray();
   res.send(result);
   // console.log(result)
 })
-// get all query by a specific user
+// get all query/myQuery by a specific user
 app.get("/query/:email", async (req, res) =>{
   const email= req.params.email;
   const query = {email: email}
   // console.log(query)
-  const result= await queriesCollection.find(query).toArray();
+  const result= ((await queriesCollection.find(query).sort({dateTime: -1}).toArray()));
   res.send(result);
 })
 // get query by a specific id for default value of update
