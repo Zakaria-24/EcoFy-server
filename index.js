@@ -77,14 +77,21 @@ app.get("/details/:id", async (req, res) =>{
   // })
 
   // get all recommendations by specific user
-  app.get("/myRecommendations/:email", async (req, res) =>{
+  // app.get("/myRecommendations/:email", async (req, res) =>{
+  //   const email= req.params.email;
+  //   const query = {email: email}
+  //   // console.log(query)
+  //   const result= await recommendsCollection.find(query).toArray();
+  //   res.send(result);
+  // })
+  // get recommendations for me without my recommendations
+  app.get("/recommendationsForMe/:email", async (req, res) =>{
     const email= req.params.email;
     const query = {email: email}
     // console.log(query)
-    const result= await recommendsCollection.find(query).toArray();
+    const result= await recommendsCollection.find(query).sort({dateTime: -1}).toArray();
     res.send(result);
   })
-
 // add a query
 app.post("/query", async(req,res)=>{
   const addQuery= req.body;
