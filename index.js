@@ -67,6 +67,24 @@ app.get("/details/:id", async (req, res) =>{
   res.send(result);
 })
 
+// get all recommendation related to specific query........
+  // app.get("//:id", async (req, res) =>{
+  //   const id= req.params.id;
+  //   const query = {queryId: id}
+  //   // console.log(query)
+  //   const result= ((await recommendsCollection.find(query).sort({dateTime: -1}).toArray()));
+  //   res.send(result);
+  // })
+
+  // get all recommendations by specific user
+  app.get("/myRecommendations/:email", async (req, res) =>{
+    const email= req.params.email;
+    const query = {email: email}
+    // console.log(query)
+    const result= await recommendsCollection.find(query).toArray();
+    res.send(result);
+  })
+
 // add a query
 app.post("/query", async(req,res)=>{
   const addQuery= req.body;
@@ -104,6 +122,15 @@ app.post("/query", async(req,res)=>{
       const result = await queriesCollection.deleteOne(filter)
       res.send(result)
     })
+
+    // Delete a my Recommendation
+    app.delete('/recommendation/:id',  async (req, res) => {
+      const id = req.params.id
+      const filter = { _id: new ObjectId(id) }
+      const result = await recommendsCollection.deleteOne(filter)
+      res.send(result)
+    })
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
