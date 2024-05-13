@@ -138,6 +138,7 @@ app.get("/details/:id", async (req, res) =>{
   // get all recommendations by specific user
   app.get("/myRecommendations/:recommenderEmail", async (req, res) =>{
     const recommenderEmail= req.params.recommenderEmail;
+    console.log(recommenderEmail)
     const filter = {recommenderEmail: recommenderEmail}
     // console.log(query)
     const result= await recommendsCollection.find(filter).toArray();
@@ -156,7 +157,7 @@ app.get("/details/:id", async (req, res) =>{
     res.send(result);
   })
 // add a query
-app.post("/query", async(req,res)=>{
+app.post("/query", verifyToken, async(req,res)=>{
   const addQuery= req.body;
   const result = await queriesCollection.insertOne(addQuery);
   res.send(result);
