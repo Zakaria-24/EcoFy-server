@@ -90,6 +90,12 @@ app.post('/jwt', async (req, res) => {
 
 // get all queries
 app.get("/queries", async (req, res) =>{
+  const filter = req.query.filter
+      const search = req.query.search
+      let query = {
+        job_title: { $regex: search, $options: 'i' },
+      }
+      if (filter) query.category = filter
   const result= await queriesCollection.find().sort({dateTime: -1}).toArray();
   res.send(result);
   // console.log(result)
