@@ -1,5 +1,9 @@
 const express = require('express')
 const cors = require('cors')
+
+const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
+
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 require('dotenv').config()
 const port = process.env.PORT || 5000
@@ -15,6 +19,25 @@ const corsOptions = {
 }
 app.use(cors(corsOptions))
 app.use(express.json())
+app.use(cookieParser())
+
+// create jwt middleware for verify data
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token
+  if (!token) return res.status(401).send({ message: 'Unauthorized Access' })
+  if (token) {
+    jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        console.log(err)
+        return res.status(401).send({ message: 'Unauthorized Access' })
+      }
+      // console.log(decoded)
+
+      req.user = decoded
+      next()
+    })
+  }
+}
 
 
 
@@ -36,6 +59,35 @@ async function run() {
 const queriesCollection= client.db("EcoFy").collection("queries");
 const recommendsCollection= client.db("EcoFy").collection("recommends");
 
+
+// jwt create/generate
+app.post('/jwt', async (req, res) => {
+  const email = req.body
+  const token = jwt.sign(email, process.env.TOKEN_SECRET, {
+    expiresIn: '7d',
+  })
+  res
+    .cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    })
+    .send({ success: true })
+})
+
+  // Clear token on logout
+  app.get('/logout', (req, res) => {
+    res
+      .clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        maxAge: 0,
+      })
+      .send({ success: true })
+  })
+
+
 // get all queries
 app.get("/queries", async (req, res) =>{
   const result= await queriesCollection.find().sort({dateTime: -1}).toArray();
@@ -43,8 +95,14 @@ app.get("/queries", async (req, res) =>{
   // console.log(result)
 })
 // get all query/myQuery by a specific user
-app.get("/query/:email", async (req, res) =>{
+app.get("/query/:email", verifyToken, async (req, res) =>{
   const email= req.params.email;
+  // email verification
+  const tokenEmail = req.user.email
+  if (tokenEmail !== email) {
+    return res.status(403).send({ message: 'Forbidden Access' })
+  }
+
   const query = {email: email}
   // console.log(query)
   const result= ((await queriesCollection.find(query).sort({dateTime: -1}).toArray()));
@@ -67,23 +125,28 @@ app.get("/details/:id", async (req, res) =>{
   res.send(result);
 })
 
+
+
 // get all recommendation related to specific query........
-  // app.get("//:id", async (req, res) =>{
-  //   const id= req.params.id;
-  //   const query = {queryId: id}
-  //   // console.log(query)
-  //   const result= ((await recommendsCollection.find(query).sort({dateTime: -1}).toArray()));
-  //   res.send(result);
-  // })
+  app.get("/queryRelatedRecommendaton/:queryId", async (req, res) =>{
+    const queryId= req.params.queryId;
+    const filter = {queryId: queryId }
+    const result= ((await recommendsCollection.find(filter).sort({dateTime: -1}).toArray()));
+    res.send(result);
+  })
 
   // get all recommendations by specific user
-  // app.get("/myRecommendations/:email", async (req, res) =>{
-  //   const email= req.params.email;
-  //   const query = {email: email}
-  //   // console.log(query)
-  //   const result= await recommendsCollection.find(query).toArray();
-  //   res.send(result);
-  // })
+  app.get("/myRecommendations/:recommenderEmail", async (req, res) =>{
+    const recommenderEmail= req.params.recommenderEmail;
+    const filter = {recommenderEmail: recommenderEmail}
+    // console.log(query)
+    const result= await recommendsCollection.find(filter).toArray();
+    res.send(result);
+  })
+
+
+
+
   // get recommendations for me without my recommendations
   app.get("/recommendationsForMe/:email", async (req, res) =>{
     const email= req.params.email;
