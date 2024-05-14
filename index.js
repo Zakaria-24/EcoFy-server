@@ -172,7 +172,12 @@ app.post("/query", verifyToken, async(req,res)=>{
 // add a recommendation 
   app.post("/recommendation", async(req,res)=>{
   const addRecommend= req.body;
+  // const queryId = req.body.queryId;
   const result = await recommendsCollection.insertOne(addRecommend);
+//   const count = await queriesCollection.updateOne(
+//     { _id: queryId},
+//     { $inc: { recommendationCount: 1 } }
+//  )
   res.send(result);
   })
 
