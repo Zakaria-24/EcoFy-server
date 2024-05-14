@@ -90,15 +90,16 @@ app.post('/jwt', async (req, res) => {
 
 // get all queries
 app.get("/queries", async (req, res) =>{
-  // const filter = req.query.filter
-  //     const search = req.query.search
-  //     let query = {
-  //       job_title: { $regex: search, $options: 'i' },
-  //     }
-  //     if (filter) query.category = filter
-  const result= await queriesCollection.find().sort({dateTime: -1}).toArray();
+
+  // for search functionality
+      const search = req.query.search  
+      let query = {
+        // product_name: { $regex: search, $options: 'i' },
+      }
+      if(search) { query = {product_name: { $regex: search, $options: 'i' }}}
+      
+  const result= await queriesCollection.find(query).sort({dateTime: -1}).toArray();
   res.send(result);
-  // console.log(result)
 })
 // get all query/myQuery by a specific user
 app.get("/query/:email", verifyToken, async (req, res) =>{
@@ -110,7 +111,6 @@ app.get("/query/:email", verifyToken, async (req, res) =>{
   }
 
   const query = {email: email}
-  // console.log(query)
   const result= ((await queriesCollection.find(query).sort({dateTime: -1}).toArray()));
   res.send(result);
 })
@@ -118,7 +118,6 @@ app.get("/query/:email", verifyToken, async (req, res) =>{
 app.get("/UpdateQuery/:id", async (req, res) =>{
   const id= req.params.id;
   const filter = {_id: new ObjectId(id)}
-  // console.log(query)
   const result= await queriesCollection.findOne(filter);
   res.send(result);
 })
@@ -126,7 +125,6 @@ app.get("/UpdateQuery/:id", async (req, res) =>{
 app.get("/details/:id", async (req, res) =>{
   const id= req.params.id;
   const filter = {_id: new ObjectId(id)}
-  // console.log(query)
   const result= await queriesCollection.findOne(filter);
   res.send(result);
 })
@@ -146,7 +144,6 @@ app.get("/details/:id", async (req, res) =>{
     const recommenderEmail= req.params.recommenderEmail;
     console.log(recommenderEmail)
     const filter = {recommenderEmail: recommenderEmail}
-    // console.log(query)
     const result= await recommendsCollection.find(filter).toArray();
     res.send(result);
   })
@@ -158,7 +155,6 @@ app.get("/details/:id", async (req, res) =>{
   app.get("/recommendationsForMe/:email", async (req, res) =>{
     const email= req.params.email;
     const query = {email: email}
-    // console.log(query)
     const result= await recommendsCollection.find(query).sort({dateTime: -1}).toArray();
     res.send(result);
   })
@@ -181,7 +177,6 @@ const updateCount = {
    $inc: { recommendationCount: 1 },
 }
 const updateRecommendationCount = await queriesCollection.updateOne( id, updateCount );
-  // console.log(updateRecommendationCount)
 
   res.send(result);
   })
