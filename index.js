@@ -142,7 +142,7 @@ app.get("/details/:id", async (req, res) =>{
   // get all recommendations by specific user
   app.get("/myRecommendations/:recommenderEmail", async (req, res) =>{
     const recommenderEmail= req.params.recommenderEmail;
-    console.log(recommenderEmail)
+    // console.log(recommenderEmail)
     const filter = {recommenderEmail: recommenderEmail}
     const result= await recommendsCollection.find(filter).toArray();
     res.send(result);
