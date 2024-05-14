@@ -90,12 +90,12 @@ app.post('/jwt', async (req, res) => {
 
 // get all queries
 app.get("/queries", async (req, res) =>{
-  const filter = req.query.filter
-      const search = req.query.search
-      let query = {
-        job_title: { $regex: search, $options: 'i' },
-      }
-      if (filter) query.category = filter
+  // const filter = req.query.filter
+  //     const search = req.query.search
+  //     let query = {
+  //       job_title: { $regex: search, $options: 'i' },
+  //     }
+  //     if (filter) query.category = filter
   const result= await queriesCollection.find().sort({dateTime: -1}).toArray();
   res.send(result);
   // console.log(result)
@@ -170,16 +170,23 @@ app.post("/query", verifyToken, async(req,res)=>{
 })
 
 // add a recommendation 
-  app.post("/recommendation", async(req,res)=>{
-  const addRecommend= req.body;
-  // const queryId = req.body.queryId;
-  const result = await recommendsCollection.insertOne(addRecommend);
-//   const count = await queriesCollection.updateOne(
-//     { _id: queryId},
-//     { $inc: { recommendationCount: 1 } }
-//  )
+  app.post("/recommendation/:queryId", async(req,res)=>{
+    // for post recommendation
+  const recommendData= req.body;
+  const result = await recommendsCollection.insertOne(recommendData);
+
+  // update recommendation count
+  const id = { _id: new ObjectId( req.params.queryId ) }
+const updateCount = {
+   $inc: { recommendationCount: 1 },
+}
+const updateRecommendationCount = await queriesCollection.updateOne( id, updateCount );
+  // console.log(updateRecommendationCount)
+
   res.send(result);
   })
+
+
 
 
     // update a my Query
@@ -210,6 +217,15 @@ app.post("/query", verifyToken, async(req,res)=>{
       const id = req.params.id
       const filter = { _id: new ObjectId(id) }
       const result = await recommendsCollection.deleteOne(filter)
+
+      // for decreases a recommendation count
+      // const queryId = { _id: new ObjectId( req.params.queryId ) }
+      // const updateCount = {
+      //    $inc: { recommendationCount: -1 },
+      // }
+      // const updateRecommendationCount = await queriesCollection.updateOne( queryId, updateCount );
+      // console.log(updateRecommendationCount) 
+
       res.send(result)
     })
 
