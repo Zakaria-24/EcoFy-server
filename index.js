@@ -14,7 +14,6 @@ const corsOptions = {
     'http://localhost:5173',
     'http://localhost:5174',
     'https://ecofy-dfbef.web.app',
-    'https://ecofy-dfbef.firebaseapp.com',
   ],
   credentials: true,
   optionSuccessStatus: 200,
@@ -71,23 +70,19 @@ app.post('/jwt', async (req, res) => {
   res
     .cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+      sameSite:"none",
+      secure:true
     })
     .send({ success: true })
 })
 
-  // Clear token on logout
-  app.get('/logout', (req, res) => {
-    res
-      .clearCookie('token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        maxAge: 0,
-      })
+
+app.post('/logout', async (req, res) => {
+  const user = req.body;
+  res
+      .clearCookie('token', { maxAge: 0, sameSite: 'none', secure: true })
       .send({ success: true })
-  })
+})
 
 
 // get all queries
@@ -150,9 +145,6 @@ app.get("/details/:id", async (req, res) =>{
     res.send(result);
   })
 
-
-
-
   // get recommendations for me without my recommendations
   app.get("/recommendationsForMe/:email", async (req, res) =>{
     const email= req.params.email;
@@ -160,6 +152,9 @@ app.get("/details/:id", async (req, res) =>{
     const result= await recommendsCollection.find(query).sort({dateTime: -1}).toArray();
     res.send(result);
   })
+
+
+
 // add a query
 app.post("/query", verifyToken, async(req,res)=>{
   const addQuery= req.body;
@@ -200,6 +195,8 @@ const updateRecommendationCount = await queriesCollection.updateOne( id, updateC
       const result = await queriesCollection.updateOne(filter, updateDoc, options)
       res.send(result)
     })
+
+
 
     // Delete a my query
     app.delete('/query/:id',  async (req, res) => {
