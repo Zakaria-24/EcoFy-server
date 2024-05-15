@@ -13,6 +13,8 @@ const corsOptions = {
   origin: [
     'http://localhost:5173',
     'http://localhost:5174',
+    'https://ecofy-dfbef.web.app',
+    'https://ecofy-dfbef.firebaseapp.com',
   ],
   credentials: true,
   optionSuccessStatus: 200,
@@ -28,7 +30,7 @@ const verifyToken = (req, res, next) => {
   if (token) {
     jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
       if (err) {
-        console.log(err)
+        // console.log(err)
         return res.status(401).send({ message: 'Unauthorized Access' })
       }
       // console.log(decoded)
@@ -211,22 +213,22 @@ const updateRecommendationCount = await queriesCollection.updateOne( id, updateC
     app.delete('/recommendation/:id',  async (req, res) => {
       const id = req.params.id
       const filter = { _id: new ObjectId(id) }
+      const data = await recommendsCollection.findOne(filter)
       const result = await recommendsCollection.deleteOne(filter)
 
       // for decreases a recommendation count
-      // const queryId = { _id: new ObjectId( req.params.queryId ) }
-      // const updateCount = {
-      //    $inc: { recommendationCount: -1 },
-      // }
-      // const updateRecommendationCount = await queriesCollection.updateOne( queryId, updateCount );
-      // console.log(updateRecommendationCount) 
+      const queryId = { _id: new ObjectId( data.queryId ) }
+      const updateCount = {
+         $inc: { recommendationCount: -1 },
+      }
+      const updateRecommendationCount = await queriesCollection.updateOne( queryId, updateCount );
+      console.log(updateRecommendationCount) 
 
       res.send(result)
     })
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
   }
