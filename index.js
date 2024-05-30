@@ -87,6 +87,9 @@ app.post('/logout', async (req, res) => {
 
 // get all queries
 app.get("/queries", async (req, res) =>{
+  // for pagination
+  const size = parseInt(req.query.size)
+  const page = parseInt(req.query.page) - 1
 
   // for search functionality
       const search = req.query.search  
@@ -95,9 +98,22 @@ app.get("/queries", async (req, res) =>{
       }
       if(search) { query = {product_name: { $regex: search, $options: 'i' }}}
       
-  const result= await queriesCollection.find(query).sort({dateTime: -1}).toArray();
+  const result= await queriesCollection.find(query).skip(page * size).limit(size).sort({dateTime: -1}).toArray();
   res.send(result);
 })
+
+  // Get all queries data count from db
+  app.get('/queries-count', async (req, res) => {
+    const search = req.query.search
+    let query = {
+
+    }
+    if(search) { query = {product_name: { $regex: search, $options: 'i' }}}
+    const count = await queriesCollection.countDocuments(query)
+
+    res.send({ count })
+  })
+
 // get all query/myQuery by a specific user
 app.get("/query/:email", verifyToken, async (req, res) =>{
   const email= req.params.email;
